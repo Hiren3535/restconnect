@@ -1,4 +1,7 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group='com.github.Hiren3535'
 
 android {
     compileSdkVersion 26
@@ -27,5 +30,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.squareup.okhttp3:okhttp:3.3.1'
     testCompile 'junit:junit:4.12'
 }
