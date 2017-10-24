@@ -1,10 +1,15 @@
 package com.gennext.hiren.restconnect;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.util.ArrayMap;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,12 +35,14 @@ import okhttp3.Response;
 
 public class RestClientHelper {
 
-    private static final String LOG_TAG = "RestClientHelper";
-    public static String defaultBaseUrl = "";
+    private static final String LOG_TAG = "REST_CONNECT>";
+    private static String defaultBaseUrl = "";
     private static final Object lockObject = new Object();
     private static RestClientHelper restClientHelper;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Context context;
+    private ProgressDialog progressDialog;
+    private AlertDialog.Builder alertDialogBuilder;
 
     private RestClientHelper() {
     }
@@ -76,100 +83,120 @@ public class RestClientHelper {
         }
     }
 
-    public void get(@NonNull String serviceUrl, @NonNull RestClientListener restClientListener) {
-        get(serviceUrl, null, null, restClientListener);
-    }
-
-    public void get(@NonNull String serviceUrl, ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
-        get(serviceUrl, null, params, restClientListener);
-    }
-
-    public void get(@NonNull String serviceUrl, ArrayMap<String, String> headers, ArrayMap<String, Object> params, RestClientListener restClientListener) {
-        final Request.Builder builder = new Request.Builder();
-        if (headers != null)
-            addHeaders(builder, headers);
-        builder.url(generateUrlParams(serviceUrl, params));
-        execute(builder, restClientListener);
-    }
-
-    public void post(@NonNull String serviceUrl, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
-        post(serviceUrl, null, params, restClientListener);
-    }
-
-    public void postCtx(Context context, @NonNull String serviceUrl, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
-        post(serviceUrl, null, params, restClientListener);
+    public void get(Context context,@NonNull String serviceUrl, @NonNull RestClientListener restClientListener) {
         this.context = context;
+        get(context,serviceUrl, null, null, restClientListener);
     }
 
-    public void post(@NonNull String serviceUrl, ArrayMap<String, String> headers, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
+    public void get(Context context,@NonNull String serviceUrl, ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
+        this.context = context;
+        get(context,serviceUrl, null, params, restClientListener);
+    }
+
+    public void get(Context context,@NonNull String serviceUrl, ArrayMap<String, String> headers, ArrayMap<String, Object> params, RestClientListener restClientListener) {
+        try {
+            final Request.Builder builder = new Request.Builder();
+            if (headers != null){
+                addHeaders(builder, headers);}
+            builder.url(generateUrlParams(serviceUrl, params));
+            execute(context, builder, restClientListener);
+        }catch (Exception e){
+            Log.e("error in get",e+"");
+        }
+    }
+
+    public void post(Context context,@NonNull String serviceUrl, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
+        this.context = context;
+        post(context,serviceUrl, null, params, restClientListener);
+    }
+
+    public void post(Context context,@NonNull String serviceUrl, ArrayMap<String, String> headers, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
+        try {
+            final Request.Builder builder = new Request.Builder();
+            if (headers != null){
+                addHeaders(builder, headers);}
+            StringBuffer urls = new StringBuffer();
+            if (defaultBaseUrl.length() > 0){
+                urls.append(defaultBaseUrl);}
+            urls.append(serviceUrl);
+            builder.url(urls.toString());
+            builder.post(generateRequestBody(params));
+            execute(context, builder, restClientListener);
+        }catch (Exception e){
+            Log.e("error in post",e+"");
+        }
+    }
+
+    public void put(Context context,@NonNull String serviceUrl, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
+        this.context = context;
+        put(context,serviceUrl, null, params, restClientListener);
+    }
+
+    public void put(Context context,@NonNull String serviceUrl, ArrayMap<String, String> headers, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
+        try {
+            final Request.Builder builder = new Request.Builder();
+            if (headers != null){
+                addHeaders(builder, headers);}
+            StringBuffer urls = new StringBuffer();
+            if (defaultBaseUrl.length() > 0){
+                urls.append(defaultBaseUrl);}
+            urls.append(serviceUrl);
+            builder.url(urls.toString());
+            builder.put(generateRequestBody(params));
+            execute(context, builder, restClientListener);
+        }catch (Exception e){
+            Log.e("error in put",e+"");
+        }
+    }
+
+    public void delete(Context context,@NonNull String serviceUrl, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
+        this.context = context;
+        delete(context,serviceUrl, null, params, restClientListener);
+    }
+
+    public void delete(Context context,@NonNull String serviceUrl, ArrayMap<String, String> headers, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
+        try {
+            final Request.Builder builder = new Request.Builder();
+            if (headers != null){
+                addHeaders(builder, headers);}
+            StringBuffer urls = new StringBuffer();
+            if (defaultBaseUrl.length() > 0){
+                urls.append(defaultBaseUrl);}
+            urls.append(serviceUrl);
+            builder.url(urls.toString());
+            builder.delete(generateRequestBody(params));
+            execute(context, builder, restClientListener);
+        }catch (Exception e){
+            Log.e("error in delete ",e+"");
+        }
+    }
+
+    public void postMultipart(Context context,@NonNull String serviceUrl, @NonNull ArrayMap<String, File> files, @NonNull RestClientListener restClientListener) {
+        this.context = context;
+        postMultipart(context,serviceUrl, null, null, files, restClientListener);
+    }
+
+    public void postMultipart(Context context,@NonNull String serviceUrl, ArrayMap<String, Object> params, @NonNull ArrayMap<String, File> files, @NonNull RestClientListener restClientListener) {
+        this.context = context;
+        postMultipart(context,serviceUrl, null, params, files, restClientListener);
+    }
+
+    public void postMultipart(Context context,@NonNull String serviceUrl, ArrayMap<String, String> headers, ArrayMap<String, Object> params, @NonNull ArrayMap<String, File> files, @NonNull RestClientListener restClientListener) {
         final Request.Builder builder = new Request.Builder();
-        if (headers != null)
-            addHeaders(builder, headers);
+        if (headers != null){
+            addHeaders(builder, headers);}
         StringBuffer urls = new StringBuffer();
-        if (defaultBaseUrl.length() > 0)
-            urls.append(defaultBaseUrl);
-        urls.append(serviceUrl);
-        builder.url(urls.toString());
-        builder.post(generateRequestBody(params));
-        execute(builder, restClientListener);
-    }
-
-    public void put(@NonNull String serviceUrl, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
-        put(serviceUrl, null, params, restClientListener);
-    }
-
-    public void put(@NonNull String serviceUrl, ArrayMap<String, String> headers, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
-        final Request.Builder builder = new Request.Builder();
-        if (headers != null)
-            addHeaders(builder, headers);
-        StringBuffer urls = new StringBuffer();
-        if (defaultBaseUrl.length() > 0)
-            urls.append(defaultBaseUrl);
-        urls.append(serviceUrl);
-        builder.url(urls.toString());
-        builder.put(generateRequestBody(params));
-        execute(builder, restClientListener);
-    }
-
-    public void delete(@NonNull String serviceUrl, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
-        delete(serviceUrl, null, params, restClientListener);
-    }
-
-    public void delete(@NonNull String serviceUrl, ArrayMap<String, String> headers, @NonNull ArrayMap<String, Object> params, @NonNull RestClientListener restClientListener) {
-        final Request.Builder builder = new Request.Builder();
-        if (headers != null)
-            addHeaders(builder, headers);
-        StringBuffer urls = new StringBuffer();
-        if (defaultBaseUrl.length() > 0)
-            urls.append(defaultBaseUrl);
-        urls.append(serviceUrl);
-        builder.url(urls.toString());
-        builder.delete(generateRequestBody(params));
-        execute(builder, restClientListener);
-    }
-
-    public void postMultipart(@NonNull String serviceUrl, @NonNull ArrayMap<String, File> files, @NonNull RestClientListener restClientListener) {
-        postMultipart(serviceUrl, null, null, files, restClientListener);
-    }
-
-    public void postMultipart(@NonNull String serviceUrl, ArrayMap<String, Object> params, @NonNull ArrayMap<String, File> files, @NonNull RestClientListener restClientListener) {
-        postMultipart(serviceUrl, null, params, files, restClientListener);
-    }
-
-    public void postMultipart(@NonNull String serviceUrl, ArrayMap<String, String> headers, ArrayMap<String, Object> params, @NonNull ArrayMap<String, File> files, @NonNull RestClientListener restClientListener) {
-        final Request.Builder builder = new Request.Builder();
-        if (headers != null)
-            addHeaders(builder, headers);
-        StringBuffer urls = new StringBuffer();
-        if (defaultBaseUrl.length() > 0)
-            urls.append(defaultBaseUrl);
+        if (defaultBaseUrl.length() > 0){
+            urls.append(defaultBaseUrl);}
         urls.append(serviceUrl);
         builder.url(urls.toString());
         builder.post(generateMultipartBody(params, files));
-        execute(builder, restClientListener);
+        execute(context,builder, restClientListener);
     }
 
-    private void execute(final Request.Builder builder, final RestClientListener restClientListener) {
+    private void execute(final Context context,final Request.Builder builder, final RestClientListener restClientListener) {
+        this.context = context;
+        getLoader(context);
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -182,9 +209,30 @@ public class RestClientHelper {
                         @Override
                         public void run() {
                             if (response.code() == 200) {
+                                progressDialog.dismiss();
+                                Toast.makeText(context, response.message(), Toast.LENGTH_SHORT).show();
                                 restClientListener.onSuccess(responseData);
                             } else {
+                                progressDialog.dismiss();
+                                alertDialogBuilder = new AlertDialog.Builder(context);
                                 restClientListener.onError(responseData);
+                                Toast.makeText(context, response.message(), Toast.LENGTH_SHORT).show();
+                                alertDialogBuilder.setMessage(response.message());
+                                alertDialogBuilder
+                                        .setCancelable(false)
+                                        .setPositiveButton("Retry",
+                                                new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int id) {
+                                                        execute(context,builder, restClientListener);
+                                                    }
+                                                })
+                                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+                                AlertDialog alertDialog = alertDialogBuilder.create();
+                                alertDialog.show();
                             }
                         }
                     });
@@ -193,12 +241,39 @@ public class RestClientHelper {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
+                            progressDialog.dismiss();
+                            alertDialogBuilder = new AlertDialog.Builder(context);
                             restClientListener.onError("Getting Bad Response...");
+                            alertDialogBuilder.setMessage("Getting Bad Response...");
+                            alertDialogBuilder
+                                    .setCancelable(false)
+                                    .setPositiveButton("Retry",
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    execute(context,builder, restClientListener);
+                                                }
+                                            })
+                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    });
+
+                            AlertDialog alertDialog = alertDialogBuilder.create();
+                            alertDialog.show();
                         }
                     });
                 }
             }
         });
+    }
+
+    private void getLoader(Context context) {
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setMessage("Please Wait...");
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
     }
 
     private String generateUrlParams(String serviceUrl, ArrayMap<String, Object> params) {
