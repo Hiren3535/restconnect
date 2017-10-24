@@ -5,8 +5,6 @@ import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.gennext.hiren.restconnect.RestClientHelper;
-
 public class MainActivity extends AppCompatActivity {
 
     ArrayMap<String, Object> postParams;
