@@ -1,7 +1,10 @@
 # restconnect
 
 
-1)	allprojects {
+1)	
+
+	allprojects {
+		....
     		repositories {
         		maven { url 'https://jitpack.io' }
     		}
